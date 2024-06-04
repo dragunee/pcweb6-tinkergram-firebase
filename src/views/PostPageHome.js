@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Container, Image, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { collection, getDocs, storage } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import Navigation from "../components/Navigation";
 

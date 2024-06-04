@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Card, Col, Container, Image, Row } from "react-bootstrap";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate, useParams } from "react-router-dom";
-import { auth, db } from "../firebase";
+import { auth, db, storage } from "../firebase";
 import { deleteDoc, doc, getDoc } from "firebase/firestore";
 import Navigation from "../components/Navigation";
+import { deleteObject, ref } from "firebase/storage";
 
 
 export default function PostPageDetails() {
@@ -14,9 +15,12 @@ export default function PostPageDetails() {
   const id = params.id;
   const [user, loading] = useAuthState(auth);
   const navigate = useNavigate();
+  const [imageName, setImageName] = useState("");
 
   async function deletePost(id) {
+    const imageReference = ref(storage, `images/${imageName}`);
     await deleteDoc(doc(db, "posts", id));
+    await deleteObject(imageReference);
     navigate("/");
   }
 
@@ -25,6 +29,7 @@ export default function PostPageDetails() {
     const post = postDocument.data();
     setCaption(post.caption);
     setImage(post.image);
+    setImageName(post.imageName);
   }
 
   useEffect(() => {

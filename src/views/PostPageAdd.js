@@ -12,6 +12,7 @@ export default function PostPageAdd() {
   const [caption, setCaption] = useState("");
   const [image, setImage] = useState("");
   const navigate = useNavigate();
+  const [imageName, setImageName] = useState("");
   const [previewImage, setPreviewImage] = useState(
     "https://zca.sg/img/placeholder"
   );
@@ -20,7 +21,7 @@ export default function PostPageAdd() {
     const imageReference = ref(storage, `images/${image.name}`);
     const response = await uploadBytes(imageReference, image);
     const imageUrl = await getDownloadURL(response.ref);
-    await addDoc(collection(db, "posts"), { caption, image: imageUrl });
+    await addDoc(collection(db, "posts"), { caption, image: imageUrl, imageName });
     navigate("/");
   }
 
@@ -61,6 +62,7 @@ export default function PostPageAdd() {
                 const previewImage = URL.createObjectURL(imageFile);
                 setImage(imageFile);
                 setPreviewImage(previewImage);
+                setImageName(imageFile.name);
               }}
             />
             <Form.Text className="text-muted">

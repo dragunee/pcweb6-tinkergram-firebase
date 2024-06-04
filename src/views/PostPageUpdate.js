@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Button, Container, Form } from "react-bootstrap";
+import { Button, Container, Image, Form } from "react-bootstrap";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate, useParams } from "react-router-dom";
-import { auth, db } from "../firebase";
+import { auth, db, storage } from "../firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import Navigation from "../components/Navigation";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 
 export default function PostPageUpdate() {
@@ -12,11 +13,17 @@ export default function PostPageUpdate() {
   const id = params.id;
   const [caption, setCaption] = useState("");
   const [image, setImage] = useState("");
+  const [previewImage, setPreviewImage] = useState(
+    "https://zca.sg/img/placeholder"
+  )
   const [user, loading] = useAuthState(auth);
   const navigate = useNavigate();
 
   async function updatePost() {
-    await updateDoc(doc(db, "posts", id), { caption, image });
+    const imageReference = ref(storage, `images/${image.name}`);
+    const response = await uploadBytes(imageReference, image);
+    const imageUrl = await getDownloadURL(response.ref);
+    await updateDoc(doc(db, "posts", id), { caption, image: imageUrl });
     navigate("/post/" + id);
   }
 
@@ -25,7 +32,7 @@ export default function PostPageUpdate() {
     const post = postDocument.data();
     setCaption(post.caption);
     setImage(post.image);
-
+    setPreviewImage(post.image);
   }
 
   useEffect(() => {
@@ -50,14 +57,24 @@ export default function PostPageUpdate() {
               onChange={(text) => setCaption(text.target.value)}
             />
           </Form.Group>
-
+          <Image
+            src={previewImage}
+            style={{
+              objectFit: "fill",
+              width: "10rem",
+              height: "10rem",
+            }}
+          />
           <Form.Group className="mb-3" controlId="image">
             <Form.Label>Image URL</Form.Label>
             <Form.Control
-              type="text"
-              placeholder=""
-              value={image}
-              onChange={(text) => setImage(text.target.value)}
+              type="file"
+              onChange={(e) => {
+                const imageFile = e.target.files[0];
+                const previewImage = URL.createObjectURL(imageFile);
+                setImage(imageFile);
+                setPreviewImage(previewImage);
+              }}
             />
             <Form.Text className="text-muted">
               Make sure the url has a image type at the end: jpg, jpeg, png.

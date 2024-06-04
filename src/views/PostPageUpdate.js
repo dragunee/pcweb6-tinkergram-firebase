@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Button, Container, Form, Nav, Navbar } from "react-bootstrap";
+import { Button, Container, Form } from "react-bootstrap";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate, useParams } from "react-router-dom";
 import { auth, db } from "../firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { signOut } from "firebase/auth";
+import Navigation from "../components/Navigation";
 
 
 export default function PostPageUpdate() {
@@ -17,7 +17,7 @@ export default function PostPageUpdate() {
 
   async function updatePost() {
     await updateDoc(doc(db, "posts", id), { caption, image });
-    navigate("/");
+    navigate("/post/" + id);
   }
 
   async function getPost(id) {
@@ -37,15 +37,7 @@ export default function PostPageUpdate() {
 
   return (
     <div>
-      <Navbar variant="light" bg="light">
-        <Container>
-          <Navbar.Brand href="/">Tinkergram</Navbar.Brand>
-          <Nav>
-            <Nav.Link href="/add">New Post</Nav.Link>
-            <Nav.Link onClick={(e) => signOut(auth)}>Sign Out</Nav.Link>
-          </Nav>
-        </Container>
-      </Navbar>
+      <Navigation />
       <Container>
         <h1 style={{ marginBlock: "1rem" }}>Update Post</h1>
         <Form>
@@ -53,7 +45,7 @@ export default function PostPageUpdate() {
             <Form.Label>Caption</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Lovely day"
+              placeholder=""
               value={caption}
               onChange={(text) => setCaption(text.target.value)}
             />
@@ -63,7 +55,7 @@ export default function PostPageUpdate() {
             <Form.Label>Image URL</Form.Label>
             <Form.Control
               type="text"
-              placeholder="https://zca.sg/img/1"
+              placeholder=""
               value={image}
               onChange={(text) => setImage(text.target.value)}
             />

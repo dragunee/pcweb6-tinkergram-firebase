@@ -3,9 +3,9 @@ import { Button, Container, Form, Nav, Navbar } from "react-bootstrap";
 import { addDoc, collection } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
-import { auth, db } from "../firebase";
+import { auth, db, storage } from "../firebase";
 import { signOut } from "firebase/auth";
-
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 export default function PostPageAdd() {
   const [user, loading] = useAuthState(auth);
@@ -14,7 +14,10 @@ export default function PostPageAdd() {
   const navigate = useNavigate();
 
   async function addPost() {
-    await addDoc(collection(db, "posts"), { caption, image });
+    const imageReference = ref(storage, `images/${image.name}`);
+    const response = await uploadBytes(imageReference, image);
+    const imageUrl = await getDownloadURL(response.ref);
+    await addDoc(collection(db, "posts"), { caption, image: imageUrl });
     navigate("/");
   }
 
@@ -48,12 +51,10 @@ export default function PostPageAdd() {
           </Form.Group>
 
           <Form.Group className="mb-3" controlId="image">
-            <Form.Label>Image URL</Form.Label>
+            <Form.Label>Image</Form.Label>
             <Form.Control
-              type="text"
-              placeholder="https://zca.sg/img/1"
-              value={image}
-              onChange={(text) => setImage(text.target.value)}
+              type="file"
+              onChange={(e) => setImage(e.target.value[0])}
             />
             <Form.Text className="text-muted">
               Make sure the url has a image type at the end: jpg, jpeg, png.
